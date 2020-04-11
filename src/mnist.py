@@ -5,8 +5,8 @@ import torch.optim as optim
 from torchsummary import summary
 from torchvision import datasets, transforms
 
-from src.gradient_compression import sparsify_gradient_topk
-from src.models import CNN
+from gradient_compression import sparsify_gradient_topk
+from models import CNN
 
 
 class Configuration:
