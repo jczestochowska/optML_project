@@ -11,8 +11,8 @@ from torch.nn import functional as F
 class CNN(nn.Module):
     def __init__(self):
         super(CNN, self).__init__()
-        self.conv1 = nn.Conv2d(1, 32, 5, 1)
-        self.conv2 = nn.Conv2d(32, 64, 5, 1)
+        self.conv1 = nn.Conv2d(1, 32, 5)
+        self.conv2 = nn.Conv2d(32, 64, 5)
         self.fc1 = nn.Linear(4*4*64, 512)
         self.fc2 = nn.Linear(512, 10)
 
@@ -24,4 +24,4 @@ class CNN(nn.Module):
         x = x.view(-1, 4*4*64)
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
-        return F.log_softmax(x, dim=1)
+        return x
