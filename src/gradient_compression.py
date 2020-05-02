@@ -1,4 +1,8 @@
 
+def no_sparsification(model):
+    for param in model.parameters():
+        with torch.no_grad():
+
 
 def sparsify_gradient_topk(model):
     for param in model.parameters():
@@ -6,7 +10,9 @@ def sparsify_gradient_topk(model):
 
 
 def sparsify_gradient_randomly(model):
-    return 1
+    for param in model.parameters():
+        with torch.no_grad():
+
 
 
 def quantize_gradient_float16(model):
@@ -20,8 +26,11 @@ def quantize_gradient_float16(model):
     return model.half(), saved_bytes
 
 def quantize_gradient_float32(model):
-    return model.float()
+    for param in model.parameters():
+        with torch.no_grad():
+
 
 
 def quantize_gradient2(model):
-    return 1
+    for param in model.parameters():
+        with torch.no_grad():
