@@ -6,9 +6,7 @@ def sparsify_gradient_topk(model):
 
 
 def sparsify_gradient_randomly(model):
-    # for param in model.parameters():
-    #     param.grad *= C
-    pass
+    return 1
 
 
 def quantize_gradient_float16(model):
@@ -26,6 +24,4 @@ def quantize_gradient_float32(model):
 
 
 def quantize_gradient2(model):
-    # for param in model.parameters():
-    #     param.grad *= C
-    pass
+    return 1
