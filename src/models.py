@@ -1,6 +1,7 @@
 from torch import nn as nn
 from torch.nn import functional as F
 
+
 # https://arxiv.org/pdf/1602.05629.pdf
 # A CNN with two 5x5 convolution layers (the first with
 # 32 channels, the second with 64, each followed with 2x2
@@ -13,7 +14,7 @@ class CNN(nn.Module):
         super(CNN, self).__init__()
         self.conv1 = nn.Conv2d(1, 32, 5)
         self.conv2 = nn.Conv2d(32, 64, 5)
-        self.fc1 = nn.Linear(4*4*64, 512)
+        self.fc1 = nn.Linear(4 * 4 * 64, 512)
         self.fc2 = nn.Linear(512, 10)
 
     def forward(self, x):
@@ -21,7 +22,7 @@ class CNN(nn.Module):
         x = F.max_pool2d(x, 2, 2)
         x = F.relu(self.conv2(x))
         x = F.max_pool2d(x, 2, 2)
-        x = x.view(-1, 4*4*64)
+        x = x.view(-1, 4 * 4 * 64)
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
         return x
