@@ -6,6 +6,9 @@ __pycache__/
 # data directory
 data/
 
+# jetbrains
+.idea/
+
 # C extensions
 *.so
 
