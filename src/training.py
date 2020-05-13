@@ -5,7 +5,7 @@ from src.models import CNN
 
 # Global constants shared among all clients that we vary in testing
 EPOCHS = 5
-BATCH_SIZE = 50
+BATCH_SIZE = 32
 
 
 class Client:
@@ -69,17 +69,19 @@ def test(client, logging=True):
     return test_loss, test_accuracy
 
 
-def average_client_models(clients):
-    "Input list of clients, output a dictionary with their averaged parameters"
-    dicts = []
-    for client in clients:
-        # TO-DO: Sparsify client paramters
-        client_dict = dict(client.model.named_parameters())
-        dicts.append(client_dict)
-    dict_keys = dicts[0].keys()
+def average_client_models(clients_dicts):
+    """
+    :param clients_dicts: list of clients state dicts
+    :return: state_dict of averaged parameters
+    """
+    # To perform averaging we need to go back to float32 cause summing is not supported for float16
+    for client in clients_dicts:
+        for name, param in client.items():
+            client[name] = param.float()
+    dict_keys = clients_dicts[0].keys()
     final_dict = dict.fromkeys(dict_keys)
     for key in dict_keys:
         # Average model parameters
-        final_dict[key] = torch.cat([dictionary[key].unsqueeze(0) for dictionary in dicts], dim=0).sum(0).div(
-            len(dicts))
+        final_dict[key] = torch.cat([dictionary[key].unsqueeze(0) for dictionary in clients_dicts], dim=0).sum(0).div(
+            len(clients_dicts))
     return final_dict

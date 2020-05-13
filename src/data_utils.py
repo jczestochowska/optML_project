@@ -6,6 +6,8 @@ import torch
 from torch.utils.data import TensorDataset, DataLoader, Subset
 from torchvision import datasets
 
+from definitions import PYTORCH_DATA_DIR
+
 
 def get_data_loaders(batch_size, num_clients, iid_split=True, percentage_val=0.2, full=False):
     val_loader = None
@@ -43,7 +45,7 @@ def get_data_loaders(batch_size, num_clients, iid_split=True, percentage_val=0.2
 
 
 def load_data(cifar=False, one_hot_labels=False, normalize=False, flatten=False, full=False):
-    data_dir = os.environ.get('PYTORCH_DATA_DIR')
+    data_dir = PYTORCH_DATA_DIR
     if data_dir is None:
         data_dir = './data'
 
@@ -158,3 +160,15 @@ def last_index(array, low, high, item):
             return last_index(array, (mid + 1), high, item)
     print(f"This label {item} was not found")
     return -1
+
+
+def get_model_bits(state_dict):
+    """
+    :param state_dict: model object for which we want to get size in bits
+    :return: model_size - number of bites for all model's parameters
+    """
+    torch.save(state_dict, "temp.p")
+    # Multiply by 8 to go from bytes to bits
+    model_size = os.path.getsize("temp.p") * 8
+    os.remove('temp.p')
+    return model_size
