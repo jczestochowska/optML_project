@@ -3,16 +3,11 @@ import torch.optim as optim
 
 from src.models import CNN
 
-# Global constants shared among all clients that we vary in testing
-EPOCHS = 5
-BATCH_SIZE = 32
-
 
 class Client:
-    def __init__(self, data_loader):
+    def __init__(self, data_loader, epochs=5):
         self.data_loader = data_loader
-        self.batch_size = BATCH_SIZE
-        self.epochs = EPOCHS
+        self.epochs = epochs
         self.lr = 0.001
         self.log_interval = 5
         self.seed = 42
