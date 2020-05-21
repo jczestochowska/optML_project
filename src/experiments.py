@@ -14,6 +14,11 @@ batch_size = 32
 num_clients = 5
 target_accuracy = 93
 iid_split = True
+# default setup is 5 epochs per client,
+# here we have five clients therefore  we need [5, 5, 5, 5, 5]
+# change the list accordingly to get variable
+# number of epochs for different clients
+epochs_per_client = 5 * [5]
 quantization = quantize_float16
 ##############################
 
@@ -21,7 +26,8 @@ quantization = quantize_float16
 train_loaders, _, test_loader = get_data_loaders(batch_size, num_clients, percentage_val=0, iid_split=iid_split)
 
 # Initialize all clients
-clients = [Client(train_loader) for train_loader in train_loaders]
+clients = [Client(train_loader, epochs) for train_loader, epochs in zip(train_loaders, epochs_per_client)]
+
 
 # Set seed for the script
 torch.manual_seed(clients[0].seed)
@@ -32,7 +38,15 @@ num_rounds = 0
 central_server = Client(test_loader)
 
 
-experiment_state = {"num_rounds": 0, "test_accuracies": [], "conserved_bits_from_server": [], "conserved_bits_from_clients": []}
+experiment_state = {"num_rounds": 0,
+                    "test_accuracies": [],
+                    "conserved_bits_from_server": [],
+                    "conserved_bits_from_clients": [],
+                    "transferred_bits_from_server": [],
+                    "transferred_bits_from_clients": [],
+                    "original_bits_from_server": [],
+                    "original_bits_from_clients": []
+                    }
 
 while testing_accuracy < target_accuracy:
     num_rounds += 1
@@ -49,7 +63,10 @@ while testing_accuracy < target_accuracy:
                 bits_transferred = get_model_bits(quantized_model)
                 # Calculate how many bits we saved
                 bits_conserved = float_model_bits - bits_transferred
+                # Add to our summary
                 experiment_state["conserved_bits_from_server"].append(bits_conserved)
+                experiment_state["transferred_bits_from_server"].append(bits_transferred)
+                experiment_state["original_bits_from_server"].append(float_model_bits)
                 # Distribute quantized model on clients
                 client.model.load_state_dict(quantized_model)
 
@@ -66,7 +83,10 @@ while testing_accuracy < target_accuracy:
         quantized_clients_models = [quantization(client.model.state_dict()) for client in clients]
         quantized_clients_bits = reduce((lambda x, y: x * y), [get_model_bits(client) for client in quantized_clients_models])
         bits_conserved = clients_bits - quantized_clients_bits
+        # Add to summary
         experiment_state["conserved_bits_from_clients"] = bits_conserved
+        experiment_state["transferred_bits_from_clients"] = quantized_clients_bits
+        experiment_state["original_bits_from_clients"] = clients_bits
         # Send quantized models to server and average them
         averaged_model = average_client_models(quantized_clients_models)
         central_server.model.load_state_dict(averaged_model)
