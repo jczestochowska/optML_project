@@ -156,7 +156,7 @@ def get_non_iid_datasets(num_clients, train_dataset):
     client_datasets = []
     # if we have validation set then train is a Subset type
     if isinstance(train_dataset, Subset):
-        labels = train_dataset.dataset.tensors[1]
+        labels = train_dataset.dataset.tensors[1][train_dataset.indices]
     else:
         labels = train_dataset.tensors[1]
     labels, sorted_indices = torch.sort(labels)
