@@ -7,7 +7,7 @@ import os
 data_files=[]
 for root, dirs, files in os.walk("."):
     for filename in files:
-    	if ".pkl" and "False" in filename:    # easily choose which files u want to compare
+    	if ".pkl" and "non_iid_mix_True" in filename:    # easily choose which files u want to compare
         	data_files.append(filename)
 
 

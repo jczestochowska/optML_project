@@ -35,22 +35,14 @@ def get_data_loaders(batch_size, num_clients, non_iid_mix_p, iid_split=True, per
             print('Creating mixed non-iid client data set with {0} non-iid'.format(non_iid_mix_p))
 
             non_iid_part, iid_part = get_non_iid_split(train_dataset,non_iid_mix_p)
-
-            print('length of train_dataset: ' +  str(len(train_dataset)))
-            print('length of non_iid_part: ' + str(len(non_iid_part)))
-            print('length of iid_part: ' + str(len(iid_part)))
-            #exit()
-
             client_datasets = get_non_iid_datasets(num_clients, non_iid_part)       # make client_datasets with non_iid_part
-            
-                                                                                   # append client_datasets with iid_part
-            for client_dataset in client_datasets:                                                                    
-                print(len(client_dataset)) 
 
-                ### Idea: concatenate iid_part part to clients here!
+            for client_nr, client_dataset in enumerate(client_datasets):            # append client_datasets with iid_part                                                       
 
-            exit()                                                                          
-                         
+                #print('before: '+str(len(client_dataset)))
+                chunk_size = int(len(iid_part)/num_clients)
+                client_dataset.indices = torch.cat((torch.as_tensor(client_dataset.indices), torch.as_tensor(iid_part.indices[chunk_size*client_nr : chunk_size*(1+client_nr)])))                                                                       
+                #print('after: '+ str(len(client_dataset)))
 
             random.shuffle(client_datasets)
         ### Arman ###    

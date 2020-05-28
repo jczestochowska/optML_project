@@ -16,24 +16,18 @@ from src.training import *
 batch_size = 25
 num_clients = 5
 target_accuracy = 93
-quantization = quantize_float16
+quantization = no_quantization
 iid_split = False
 
 ### Arman ###
 non_iid_mix = True
-non_iid_mix_p = 0.9   # use 90% for non-iid and 10% for iid
+non_iid_mix_p = 0.9   # % of non-iid data in client datasets
 ### Arman ###
 
 ##############################
 
 # Load data
 train_loaders, _, test_loader = get_data_loaders(batch_size, num_clients,non_iid_mix_p, percentage_val=0, iid_split=iid_split, non_iid_mix=non_iid_mix)
-
-exit()
-
-
-
-
 
 
 # Initialize all clients
@@ -108,6 +102,6 @@ if central_server.save_model:
     torch.save(central_server.model.state_dict(), f"{central_server.model_name}.pt")
 
 # Save experiment states
-filename = f"batch_{batch_size}_num_clients_{num_clients}_iid_split_{iid_split}_quantization_{quantization.__name__}.pkl"
+filename = f"batch_{batch_size}_num_clients_{num_clients}_iid_split_{iid_split}_non_iid_mix_{non_iid_mix}_non_iid_mix_p_{non_iid_mix_p}_quantization_{quantization.__name__}.pkl"
 with open(os.path.join(ROOT_DIR, "outputs", filename), "wb") as f:
     pickle.dump(experiment_state, f)
