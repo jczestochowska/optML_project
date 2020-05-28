@@ -16,12 +16,25 @@ from src.training import *
 batch_size = 25
 num_clients = 5
 target_accuracy = 93
-iid_split = True
 quantization = quantize_float16
+iid_split = False
+
+### Arman ###
+non_iid_mix = True
+non_iid_mix_p = 0.9   # use 90% for non-iid and 10% for iid
+### Arman ###
+
 ##############################
 
 # Load data
-train_loaders, _, test_loader = get_data_loaders(batch_size, num_clients, percentage_val=0, iid_split=iid_split)
+train_loaders, _, test_loader = get_data_loaders(batch_size, num_clients,non_iid_mix_p, percentage_val=0, iid_split=iid_split, non_iid_mix=non_iid_mix)
+
+exit()
+
+
+
+
+
 
 # Initialize all clients
 clients = [Client(train_loader) for train_loader in train_loaders]
