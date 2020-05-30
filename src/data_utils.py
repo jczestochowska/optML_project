@@ -1,7 +1,6 @@
 import os
 import random
-import math
-import sys
+
 import numpy as np
 import torch
 from torch.utils.data import TensorDataset, DataLoader, Subset
@@ -30,23 +29,15 @@ def get_data_loaders(batch_size, num_clients, iid_split=True, percentage_val=0.2
         # Random IID data split
         client_datasets = torch.utils.data.random_split(train_dataset, np.tile(int(len(train_dataset) / num_clients),
                                                                                num_clients).tolist())
-        # for client_dataset in client_datasets:
-        #     print(client_dataset.dataset[client_dataset.indices][1])
     else:
         #### Arman ####
         if non_iid_mix:
             non_iid_part, iid_part = get_non_iid_split(train_dataset, non_iid_mix)
-            iid_part_samples = iid_part.dataset.tensors[0][iid_part.indices]
-            iid_part_labels = iid_part.dataset.tensors[1][iid_part.indices]
             client_datasets = get_non_iid_datasets(num_clients, non_iid_part)  # make client_datasets with non_iid_part
             for client_nr, client_dataset in enumerate(client_datasets):
                 chunk_size = int(len(iid_part) / num_clients)
-                with_iid_samples = torch.cat((client_dataset.tensors[0],
-                                                       iid_part_samples[chunk_size*client_nr : chunk_size*(1+client_nr)]))
-                with_iid_labels = torch.cat((client_dataset.tensors[1],
-                                                       iid_part_labels[chunk_size*client_nr : chunk_size*(1+client_nr)]))
-                client_dataset = TensorDataset(with_iid_samples, with_iid_labels)
-                client_datasets.append(client_dataset)
+                client_dataset.indices.\
+                    extend(iid_part.indices[chunk_size*client_nr: chunk_size*(1+client_nr)])
         ### Arman ###
         else:
             # Each client has different set of non overlapping digits
@@ -71,9 +62,10 @@ def get_non_iid_split(train_dataset, non_iid_mix_p):
     iid_part, non_iid_part = torch.utils.data.random_split(train_dataset, [round(non_iid_mix_p * len(train_dataset)),
                                                                            round((1 - non_iid_mix_p) * len(
                                                                                train_dataset))])
+    if isinstance(train_dataset, Subset):
+        iid_part.dataset = iid_part.dataset.dataset
+        non_iid_part.dataset = non_iid_part.dataset.dataset
     return non_iid_part, iid_part
-
-
 ### Arman ###
 
 
@@ -144,27 +136,26 @@ def get_non_iid_datasets(num_clients, train_dataset):
     To achieve this we perform binary search on labels tensor
     to divide initial dataset
     """
-
     client_datasets = []
     # if we have validation set then train is a Subset type
     if isinstance(train_dataset, Subset):
-        samples = train_dataset.dataset.tensors[0][train_dataset.indices]
         labels = train_dataset.dataset.tensors[1][train_dataset.indices]
     else:
-        samples = train_dataset.tensors[0]
         labels = train_dataset.tensors[1]
-    sorted_labels, sorted_indices = torch.sort(labels)
+    labels, sorted_indices = torch.sort(labels)
     digits_per_client = 10 // num_clients
     digit = 0
     for client in range(num_clients):
-        first_idx = first_index(sorted_labels, 0, len(sorted_labels), digit)
+        first_idx = first_index(labels, 0, len(labels), digit)
         if client == num_clients - 1:
-            last_idx = len(sorted_labels) - 1
+            last_idx = len(labels) - 1
         else:
-            last_idx = last_index(sorted_labels, 0, len(sorted_labels), digit + (digits_per_client - 1))
-        client_samples = samples[sorted_indices[first_idx: last_idx + 1]]
-        client_labels = labels[sorted_indices[first_idx: last_idx + 1]]
-        client_dataset = TensorDataset(client_samples, client_labels)
+            last_idx = last_index(labels, 0, len(labels), digit + (digits_per_client - 1))
+        if isinstance(train_dataset, Subset):
+            new_indices = np.array(train_dataset.indices)[sorted_indices[first_idx: last_idx + 1].numpy()]
+            client_dataset = Subset(train_dataset.dataset, new_indices.tolist())
+        else:
+            client_dataset = Subset(train_dataset, sorted_indices[first_idx: last_idx + 1].to_list())
         client_datasets.append(client_dataset)
         digit += digits_per_client
     return client_datasets

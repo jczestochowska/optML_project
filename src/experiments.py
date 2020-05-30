@@ -23,7 +23,7 @@ quantization = quantize_float16
 ##############################
 
 # Load data
-train_loaders, _, test_loader = get_data_loaders(batch_size, num_clients, non_iid_mix=0.2, percentage_val=0, iid_split=iid_split)
+train_loaders, _, test_loader = get_data_loaders(batch_size, num_clients, non_iid_mix=0.1, percentage_val=0, iid_split=iid_split)
 
 # Initialize all clients
 clients = [Client(train_loader, epochs) for train_loader, epochs in zip(train_loaders, epochs_per_client)]
