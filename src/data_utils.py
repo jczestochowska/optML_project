@@ -30,7 +30,6 @@ def get_data_loaders(batch_size, num_clients, iid_split=True, percentage_val=0.2
         client_datasets = torch.utils.data.random_split(train_dataset, np.tile(int(len(train_dataset) / num_clients),
                                                                                num_clients).tolist())
     else:
-        #### Arman ####
         if non_iid_mix:
             non_iid_part, iid_part = get_non_iid_split(train_dataset, non_iid_mix)
             client_datasets = get_non_iid_datasets(num_clients, non_iid_part)  # make client_datasets with non_iid_part
@@ -38,7 +37,6 @@ def get_data_loaders(batch_size, num_clients, iid_split=True, percentage_val=0.2
                 chunk_size = int(len(iid_part) / num_clients)
                 client_dataset.indices.\
                     extend(iid_part.indices[chunk_size*client_nr: chunk_size*(1+client_nr)])
-        ### Arman ###
         else:
             # Each client has different set of non overlapping digits
             client_datasets = get_non_iid_datasets(num_clients, train_dataset)
@@ -56,7 +54,6 @@ def get_data_loaders(batch_size, num_clients, iid_split=True, percentage_val=0.2
     return train_loaders, val_loader, test_loader
 
 
-### Arman ###
 def get_non_iid_split(train_dataset, non_iid_mix_p):
     # split train_dataset into a non-iid and iid part
     iid_part, non_iid_part = torch.utils.data.random_split(train_dataset, [round(non_iid_mix_p * len(train_dataset)),
@@ -66,7 +63,6 @@ def get_non_iid_split(train_dataset, non_iid_mix_p):
         iid_part.dataset = iid_part.dataset.dataset
         non_iid_part.dataset = non_iid_part.dataset.dataset
     return non_iid_part, iid_part
-### Arman ###
 
 
 def load_data(cifar=False, one_hot_labels=False, normalize=False, flatten=False, full=False):
