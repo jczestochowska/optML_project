@@ -10,10 +10,10 @@ from src.training import *
 
 ##############################
 # Configure here to get a specific experiment
-batch_size = 32
+batch_size = 25
 num_clients = 5
 target_accuracy = 93
-iid_split = True
+iid_split = False
 # default setup is 5 epochs per client,
 # here we have five clients therefore  we need [5, 5, 5, 5, 5]
 # change the list accordingly to get variable
@@ -23,7 +23,7 @@ quantization = quantize_float16
 ##############################
 
 # Load data
-train_loaders, _, test_loader = get_data_loaders(batch_size, num_clients, percentage_val=0, iid_split=iid_split)
+train_loaders, _, test_loader = get_data_loaders(batch_size, num_clients, non_iid_mix=0.1, percentage_val=0, iid_split=iid_split)
 
 # Initialize all clients
 clients = [Client(train_loader, epochs) for train_loader, epochs in zip(train_loaders, epochs_per_client)]
@@ -102,6 +102,6 @@ if central_server.save_model:
     torch.save(central_server.model.state_dict(), f"{central_server.model_name}.pt")
 
 # Save experiment states
-filename = f"num_clients_{num_clients}_iid_split_{iid_split}_quantization_{quantization.__name__}.pkl"
+filename = f"iid_split_{iid_split}_quantization_{quantization.__name__}.pkl"
 with open(os.path.join(ROOT_DIR, "outputs", filename), "wb") as f:
     pickle.dump(experiment_state, f)

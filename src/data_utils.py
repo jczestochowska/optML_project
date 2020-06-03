@@ -9,7 +9,8 @@ from torchvision import datasets
 from definitions import PYTORCH_DATA_DIR
 
 
-def get_data_loaders(batch_size, num_clients, iid_split=True, percentage_val=0.2, full=False):
+def get_data_loaders(batch_size, num_clients, iid_split=True, percentage_val=0.2, full=False,
+                     non_iid_mix=0):
     val_loader = None
     train_input, train_target, test_input, test_target = load_data(flatten=False, full=full)
     train_dataset = TensorDataset(train_input, train_target)
@@ -29,9 +30,17 @@ def get_data_loaders(batch_size, num_clients, iid_split=True, percentage_val=0.2
         client_datasets = torch.utils.data.random_split(train_dataset, np.tile(int(len(train_dataset) / num_clients),
                                                                                num_clients).tolist())
     else:
-        # Each client has different set of non overlapping digits
-        client_datasets = get_non_iid_datasets(num_clients, train_dataset)
-        random.shuffle(client_datasets)
+        if non_iid_mix:
+            non_iid_part, iid_part = get_non_iid_split(train_dataset, non_iid_mix)
+            client_datasets = get_non_iid_datasets(num_clients, non_iid_part)  # make client_datasets with non_iid_part
+            for client_nr, client_dataset in enumerate(client_datasets):
+                chunk_size = int(len(iid_part) / num_clients)
+                client_dataset.indices.\
+                    extend(iid_part.indices[chunk_size*client_nr: chunk_size*(1+client_nr)])
+        else:
+            # Each client has different set of non overlapping digits
+            client_datasets = get_non_iid_datasets(num_clients, train_dataset)
+    random.shuffle(client_datasets)
     train_loaders = []
     for train_dataset in client_datasets:
         train_loader = DataLoader(dataset=train_dataset,
@@ -41,7 +50,19 @@ def get_data_loaders(batch_size, num_clients, iid_split=True, percentage_val=0.2
 
     test_loader = DataLoader(dataset=TensorDataset(test_input, test_target),
                              batch_size=batch_size)
+
     return train_loaders, val_loader, test_loader
+
+
+def get_non_iid_split(train_dataset, non_iid_mix_p):
+    # split train_dataset into a non-iid and iid part
+    iid_part, non_iid_part = torch.utils.data.random_split(train_dataset, [round(non_iid_mix_p * len(train_dataset)),
+                                                                           round((1 - non_iid_mix_p) * len(
+                                                                               train_dataset))])
+    if isinstance(train_dataset, Subset):
+        iid_part.dataset = iid_part.dataset.dataset
+        non_iid_part.dataset = non_iid_part.dataset.dataset
+    return non_iid_part, iid_part
 
 
 def load_data(cifar=False, one_hot_labels=False, normalize=False, flatten=False, full=False):
@@ -127,9 +148,10 @@ def get_non_iid_datasets(num_clients, train_dataset):
         else:
             last_idx = last_index(labels, 0, len(labels), digit + (digits_per_client - 1))
         if isinstance(train_dataset, Subset):
-            client_dataset = Subset(train_dataset.dataset, sorted_indices[first_idx: last_idx + 1])
+            new_indices = np.array(train_dataset.indices)[sorted_indices[first_idx: last_idx + 1].numpy()]
+            client_dataset = Subset(train_dataset.dataset, new_indices.tolist())
         else:
-            client_dataset = Subset(train_dataset, sorted_indices[first_idx: last_idx + 1])
+            client_dataset = Subset(train_dataset, sorted_indices[first_idx: last_idx + 1].to_list())
         client_datasets.append(client_dataset)
         digit += digits_per_client
     return client_datasets
