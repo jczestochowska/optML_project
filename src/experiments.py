@@ -102,6 +102,6 @@ if central_server.save_model:
     torch.save(central_server.model.state_dict(), f"{central_server.model_name}.pt")
 
 # Save experiment states
-filename = f"num_clients_{num_clients}_iid_split_{iid_split}_quantization_{quantization.__name__}.pkl"
+filename = f"iid_split_{iid_split}_quantization_{quantization.__name__}.pkl"
 with open(os.path.join(ROOT_DIR, "outputs", filename), "wb") as f:
     pickle.dump(experiment_state, f)
