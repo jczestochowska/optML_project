@@ -85,9 +85,9 @@ while testing_accuracy < target_accuracy:
                                         [get_model_bits(client) for client in quantized_clients_models])
         bits_conserved = clients_bits - quantized_clients_bits
         # Add to summary
-        experiment_state["conserved_bits_from_clients"].append(bits_conserved)
-        experiment_state["transferred_bits_from_clients"].append(quantized_clients_bits)
-        experiment_state["original_bits_from_clients"].append(clients_bits)
+        experiment_state["conserved_bits_from_clients"].append(bits_conserved // num_clients)
+        experiment_state["transferred_bits_from_clients"].append(quantized_clients_bits // num_clients)
+        experiment_state["original_bits_from_clients"].append(clients_bits // num_clients)
         # Send quantized models to server and average them
         averaged_model = average_client_models(quantized_clients_models)
         central_server.model.load_state_dict(averaged_model)
