@@ -11,6 +11,7 @@ class Client:
         self.lr = 0.001
         self.log_interval = 5
         self.seed = 42
+        torch.manual_seed(self.seed)
         self.save_model = False
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.model = CNN().to(self.device)
