@@ -151,7 +151,7 @@ def get_non_iid_datasets(num_clients, train_dataset):
             new_indices = np.array(train_dataset.indices)[sorted_indices[first_idx: last_idx + 1].numpy()]
             client_dataset = Subset(train_dataset.dataset, new_indices.tolist())
         else:
-            client_dataset = Subset(train_dataset, sorted_indices[first_idx: last_idx + 1].to_list())
+            client_dataset = Subset(train_dataset, sorted_indices[first_idx: last_idx + 1].tolist())
         client_datasets.append(client_dataset)
         digit += digits_per_client
     return client_datasets

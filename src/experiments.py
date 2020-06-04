@@ -7,13 +7,15 @@ from src.data_utils import get_data_loaders, get_model_bits
 from src.weight_quantization import quantize_float16
 from src.training import *
 
-
 ##############################
 # Configure here to get a specific experiment
 batch_size = 25
 num_clients = 5
 target_accuracy = 93
 iid_split = False
+non_iid_mix = 0
+# validation set
+percentage_val = 0
 # default setup is 5 epochs per client,
 # here we have five clients therefore  we need [5, 5, 5, 5, 5]
 # change the list accordingly to get variable
@@ -23,11 +25,11 @@ quantization = quantize_float16
 ##############################
 
 # Load data
-train_loaders, _, test_loader = get_data_loaders(batch_size, num_clients, non_iid_mix=0.1, percentage_val=0, iid_split=iid_split)
+train_loaders, _, test_loader = get_data_loaders(batch_size, num_clients, non_iid_mix=non_iid_mix,
+                                                 percentage_val=percentage_val, iid_split=iid_split)
 
 # Initialize all clients
 clients = [Client(train_loader, epochs) for train_loader, epochs in zip(train_loaders, epochs_per_client)]
-
 
 # Set seed for the script
 torch.manual_seed(clients[0].seed)
@@ -36,7 +38,6 @@ testing_accuracy = 0
 num_rounds = 0
 
 central_server = Client(test_loader)
-
 
 experiment_state = {"num_rounds": 0,
                     "test_accuracies": [],
@@ -81,7 +82,8 @@ while testing_accuracy < target_accuracy:
         clients_bits = reduce((lambda x, y: x * y), [get_model_bits(client.model.state_dict()) for client in clients])
         # Quantize clients models
         quantized_clients_models = [quantization(client.model.state_dict()) for client in clients]
-        quantized_clients_bits = reduce((lambda x, y: x * y), [get_model_bits(client) for client in quantized_clients_models])
+        quantized_clients_bits = reduce((lambda x, y: x * y),
+                                        [get_model_bits(client) for client in quantized_clients_models])
         bits_conserved = clients_bits - quantized_clients_bits
         # Add to summary
         experiment_state["conserved_bits_from_clients"] = bits_conserved
