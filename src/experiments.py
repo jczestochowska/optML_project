@@ -98,6 +98,8 @@ while testing_accuracy < target_accuracy:
     experiment_state['test_accuracies'].append(testing_accuracy)
     experiment_state['num_rounds'] = num_rounds + 1
 
+    num_rounds += 1
+
 # Save model
 if central_server.save_model:
     torch.save(central_server.model.state_dict(), f"{central_server.model_name}.pt")
