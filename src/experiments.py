@@ -50,8 +50,7 @@ experiment_state = {"num_rounds": 0,
                     }
 
 while testing_accuracy < target_accuracy:
-    num_rounds += 1
-    print("Communication Round {0}".format(num_rounds))
+    print("Communication Round {0}".format(num_rounds+1))
 
     if num_rounds > 1:
         # Load server weights onto clients
@@ -86,9 +85,9 @@ while testing_accuracy < target_accuracy:
                                         [get_model_bits(client) for client in quantized_clients_models])
         bits_conserved = clients_bits - quantized_clients_bits
         # Add to summary
-        experiment_state["conserved_bits_from_clients"] = bits_conserved
-        experiment_state["transferred_bits_from_clients"] = quantized_clients_bits
-        experiment_state["original_bits_from_clients"] = clients_bits
+        experiment_state["conserved_bits_from_clients"].append(bits_conserved)
+        experiment_state["transferred_bits_from_clients"].append(quantized_clients_bits)
+        experiment_state["original_bits_from_clients"].append(clients_bits)
         # Send quantized models to server and average them
         averaged_model = average_client_models(quantized_clients_models)
         central_server.model.load_state_dict(averaged_model)
@@ -97,7 +96,7 @@ while testing_accuracy < target_accuracy:
     # Test the aggregated model
     test_loss, testing_accuracy = test(central_server)
     experiment_state['test_accuracies'].append(testing_accuracy)
-    experiment_state['num_rounds'] = num_rounds
+    experiment_state['num_rounds'] = num_rounds + 1
 
 # Save model
 if central_server.save_model:
