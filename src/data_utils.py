@@ -12,12 +12,11 @@ from definitions import PYTORCH_DATA_DIR
 def get_data_loaders(batch_size, num_clients, iid_split=True, percentage_val=0.2, full=False,
                      non_iid_mix=0):
 
-
     '''
-    A function to create the data loaders for each client in the Federate Learning Setup
+    A function to create the data loaders for each client in the Federated Learning Setup
 
-    :param batch_size: set the batch size for each client as a percentage of the local training sample per client
-    :param num_clients: set the number of clients in federate leraning setup
+    :param batch_size: set the number of samples in a batch for each client
+    :param num_clients: set the number of clients in federate learning setup
     :param iid_split: determine if the client's data should be iid or non-iid
     :param percentage_val: set the validation percentage
     :param full: use the full or partial data set
@@ -82,8 +81,6 @@ def get_non_iid_split(train_dataset, non_iid_mix_p):
     :return: iid_part = iid part of training set
              non_iid_part = non-iid part of training set
     '''
-
-
     # split train_dataset into a non-iid and iid part
     iid_part, non_iid_part = torch.utils.data.random_split(train_dataset, [round(non_iid_mix_p * len(train_dataset)),
                                                                            round((1 - non_iid_mix_p) * len(
@@ -96,13 +93,13 @@ def get_non_iid_split(train_dataset, non_iid_mix_p):
 
 def load_data(cifar=False, one_hot_labels=False, normalize=False, flatten=False, full=False):
 
-     '''
+    '''
     A function to load the MNIST (CIFAR) data and create an input and target set for both training and testing 
 
     :param cifar: use cifar data set
-    :param one_hot_labels: ???
+    :param one_hot_labels: whether to transform labels into one hot encoding
     :param normalize: normalize data
-    :param flatten: transform array to dimensions 784x1 ???
+    :param flatten: transform array to dimensions 784x1
     :param full: use the full or partial data set
     
     
@@ -191,9 +188,7 @@ def get_non_iid_datasets(num_clients, train_dataset):
     :param train_dataset: training data set
 
     :return: client_datasets = returns the data sets for each client
-
     '''
-
     client_datasets = []
     # if we have validation set then train is a Subset type
     if isinstance(train_dataset, Subset):
@@ -229,8 +224,7 @@ def first_index(array, low, high, item):
     :param high:
     :param item:
 
-    :return: -1
-
+    :return: first index of the searched element or -1
     '''
 
     if high >= low:
@@ -255,7 +249,7 @@ def last_index(array, low, high, item):
     :param high:
     :param item:
 
-    :return: -1
+    :return: last index of the searched element or -1
     '''
 
     if high >= low:
