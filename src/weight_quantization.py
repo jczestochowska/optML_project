@@ -1,16 +1,26 @@
 import torch
 
 def quantize_float16(model_dict):
-    """
-    :param model: Model's state dict with default 32-bit float parameters
-    :return: model's state dict with 16-bit float parameters
-    """
+    '''
+    This function performs the 16-bit quantization  
+
+    :param model_dict: Model's state dict with default 32-bit float parameters
+    :return: model_dict = Model's state dict with 16-bit float parameters
+    '''
+
     for name, param in model_dict.items():
         model_dict[name] = param.half()
     return model_dict
 
 
 def quantize_int8(model_dict):
+    '''
+    This function performs the 8-bit quantization  
+
+    :param model_dict: Model's state dict with default 32-bit float parameters
+    :return: model_dict = Model's state dict with 8-bit int parameters
+    '''
+
     #Find maximum parameter
     max_param = 0
     for name, param in model_dict.items():
@@ -24,10 +34,23 @@ def quantize_int8(model_dict):
     return model_dict, multiplier
 
 def decode_quantized_model_int8(model_dict, multiplier):
+    '''
+
+
+
+    '''
+
     for name,param in model_dict.items():
         model_dict[name] = param.to(torch.float32) / multiplier
     return model_dict
 
 
 def no_quantization(model_dict):
+    '''
+    This function performs no quantization and just returns the model's state dicts
+
+    :param model_dict: Model's state dict with default 32-bit float parameters
+    :return: model_dict = Model's state dict with default 32-bit float parameters
+    '''
+
     return model_dict
