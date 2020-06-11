@@ -1,13 +1,12 @@
 from torch import nn as nn
 from torch.nn import functional as F
+'''
 
+https://arxiv.org/pdf/1602.05629.pdf: A CNN with two 5x5 convolution layers (the first with 
+32 channels, the second with 64, each followed with 2x2 max pooling), a fully connected layer with 512 units and
+ReLu activation, and a final softmax output layer (1,663,370 total parameters.
 
-# https://arxiv.org/pdf/1602.05629.pdf
-# A CNN with two 5x5 convolution layers (the first with
-# 32 channels, the second with 64, each followed with 2x2
-# max pooling), a fully connected layer with 512 units and
-# ReLu activation, and a final softmax output layer (1,663,370
-# total parameters).
+'''
 
 class CNN(nn.Module):
     def __init__(self):

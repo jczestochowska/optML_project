@@ -22,7 +22,11 @@ class Client:
 
 
 def train(client, epoch, logging=True):
-    # put model in train mode, we need gradients
+    '''
+    Put model in train mode, we need gradients
+    
+    '''
+    
     client.model.train()
     train_loader = client.data_loader
     train_loss = 0
@@ -41,7 +45,11 @@ def train(client, epoch, logging=True):
 
 
 def test(client, logging=True):
-    # put model in eval mode, disable dropout etc.
+    '''
+    Put model in eval mode, disable dropout etc.
+    
+    '''
+
     client.model.eval()
     test_loss = 0
     correct = 0
@@ -66,11 +74,14 @@ def test(client, logging=True):
 
 
 def average_client_models(clients_dicts):
-    """
+    '''
+    To perform averaging we need to go back to float32 cause summing is not supported for float16
+
     :param clients_dicts: list of clients state dicts
     :return: state_dict of averaged parameters
-    """
-    # To perform averaging we need to go back to float32 cause summing is not supported for float16
+
+    '''
+
     for client in clients_dicts:
         for name, param in client.items():
             client[name] = param.float()
