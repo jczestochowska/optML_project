@@ -5,6 +5,11 @@ import matplotlib.pyplot as plt
 
 from definitions import ROOT_DIR
 
+'''
+This script plots all accuracy data output pickle files that were created during the experiments
+
+'''
+
 data_files = []
 dir_path = os.path.join(ROOT_DIR, "outputs")
 for filename in os.listdir(dir_path):
